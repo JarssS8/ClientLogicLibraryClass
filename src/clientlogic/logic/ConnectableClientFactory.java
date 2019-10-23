@@ -5,10 +5,15 @@
  */
 package clientlogic.logic;
 
+import utillities.interfaces.Connectable;
+
 /**
- *
- * @author adria
+ * This class creates a new Client.
+ * @author Gaizka
+ * 
  */
-public interface Sessionable {
-    
+public class ConnectableClientFactory {
+    public static Connectable getClient(){
+        return new Client();
+    }
 }
