@@ -5,7 +5,7 @@
  */
 package clientlogic.logic;
 
-import utillities.interfaces.Connectable;
+import utilities.interfaces.Connectable;
 
 /**
  * This class creates a new Client.
