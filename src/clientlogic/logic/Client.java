@@ -143,7 +143,7 @@ public class Client implements Connectable{
      * @param user 
      */
     @Override
-    public void logOut(User user) throws LogicException{
+    public void logOut(User user) throws LogicException               {
         LOGGER.info("LogOut petition initialize");
         try {
             //Create a new message with the user who had received 
