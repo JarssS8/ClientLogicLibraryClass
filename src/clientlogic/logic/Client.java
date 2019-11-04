@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import utilities.beans.User;
@@ -22,8 +23,8 @@ import utilities.interfaces.Connectable;
  */
 public class Client implements Connectable{
     private static final Logger LOGGER=Logger.getLogger("clientlogic.logic.Client");
-    private final int PORT=0;
-    private final String IP="0";
+    private final int PORT=Integer.parseInt(ResourceBundle.getBundle("client.logic.ConnectionProperties").getString("PORT"));
+    private final String IP=ResourceBundle.getBundle("client.logic.ConnectionProperties").getString("IP");
     Message message;
     Socket socket;
     ObjectOutputStream send;
@@ -183,6 +184,8 @@ public class Client implements Connectable{
     public String getMessage() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
+
+
         
     }
 
