@@ -22,12 +22,12 @@ import utilities.interfaces.Connectable;
  */
 public class Client implements Connectable{
     private static final Logger LOGGER=Logger.getLogger("clientlogic.logic.Client");
-    private final int PORT=0;
-    private final String IP="0";
-    Message message;
+    private final int PORT=5000;
+    private final String IP="localhost";
+   
     Socket socket;
-    ObjectOutputStream send;
-    ObjectInputStream receive;
+    ObjectOutputStream send = null;
+    ObjectInputStream receive = null;
     
     public Client() {
         
@@ -49,20 +49,27 @@ public class Client implements Connectable{
     @Override
      public User logIn(User user) throws LoginNotFoundException,WrongPasswordException,LogicException{
         LOGGER.info("Login petition initialize");
+        
+         Message outputMessage;
+         Message inputMessage = new Message();
+        
         try {
      
            //Create a new message with the user who had received 
-            message = new Message();
-            message.setUser(user);
-            message.setType("Login");
+            outputMessage = new Message();
+            outputMessage.setUser(user);
+            outputMessage.setType("Login");
+            
             //Send the message through the socket to the server
-            send.writeObject(message);
+            
+            send.writeObject(outputMessage);
             LOGGER.info("Sending message...");
             //Receive the response of the server through the socket
-            message = (Message) receive.readObject();
+            inputMessage = (Message) receive.readObject();
+            
             LOGGER.info("Reading message...");
             //Control of error of Login
-            switch(message.getType()){
+            switch(inputMessage.getType()){
                 case "PasswordError":
                     throw new WrongPasswordException();
                     
@@ -84,12 +91,13 @@ public class Client implements Connectable{
             if(receive!=null){
                 receive.close();
             }
-            } catch (IOException ex) {
+        } catch (IOException ex) {
                 Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
-            }
+        }
+        
          // Return of the message to the controller
          LOGGER.info("Returning the message");
-         return message.getUser();
+         return inputMessage.getUser();
          
     }
     
@@ -100,20 +108,24 @@ public class Client implements Connectable{
     @Override
     public User signUp(User user) throws LoginAlreadyTakenException,LogicException{
         LOGGER.info("SignUp petition initialize");
+         Message outputMessage;
+         Message inputMessage = new Message();        
         try {
             //Create a new message with the user who had received 
-            message = new Message();
-            message.setUser(user);
-            message.setType("SignUp");
+            outputMessage = new Message();
+            outputMessage.setUser(user);
+            outputMessage.setType("SignUp");
             //Send the message through the socket to the server
-            send.writeObject(message);
+            send.writeObject(outputMessage);
             LOGGER.info("Sending message...");
             
             //Receive the response of the server through the socket
-            message= (Message) receive.readObject();
+            
+            inputMessage= (Message) receive.readObject();
+            
             LOGGER.info("Reading message...");
             //Control of error of Sign Up
-            switch(message.getType()){
+            switch(inputMessage.getType()){
                 case "AlreadyTaken":
                     throw new LoginAlreadyTakenException();
                 default: 
@@ -123,7 +135,10 @@ public class Client implements Connectable{
             Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
         } catch (ClassNotFoundException ex) {
             Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        } catch (Exception ex) {
+            Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
+        } finally{
+            
          try {
             if(send!=null){
                 send.close();
@@ -134,9 +149,10 @@ public class Client implements Connectable{
             } catch (IOException ex) {
                 Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
             }
+        }
          // Return of the message to the controller
          LOGGER.info("Returning the message");
-         return message.getUser();
+         return inputMessage.getUser();
     }
     /**
      * Send a LogOut petition to the server
@@ -145,20 +161,22 @@ public class Client implements Connectable{
     @Override
     public void logOut(User user) throws LogicException               {
         LOGGER.info("LogOut petition initialize");
+        Message outputMessage;
+         Message inputMessage = new Message();  
         try {
             //Create a new message with the user who had received 
-            message = new Message();
-            message.setUser(user);
-            message.setType("LogOut");
+            outputMessage = new Message();
+            outputMessage.setUser(user);
+            outputMessage.setType("LogOut");
             //Send the message through the socket to the server
-            send.writeObject(message);
+            send.writeObject(outputMessage);
             LOGGER.info("Reading message...");
             
             //Receive the response of the server through the socket
-            message = (Message) receive.readObject();
+            inputMessage = (Message) receive.readObject();
             LOGGER.info("Reading message...");
             //Control of error of Sign Up
-            if(message.getType().equalsIgnoreCase("Error")){
+            if(inputMessage.getType().equalsIgnoreCase("Error")){
                 throw new LogicException();            
             }
            
