@@ -83,8 +83,8 @@ public class Client implements Connectable{
             if(objectInputStream!=null){
                 objectInputStream.close();
             }
-            } catch (Exception ex) {
-                LOGGER.warning("Error de conexión al servidor"+ex.getMessage());
+        } catch (Exception ex) {
+            LOGGER.warning("Error de conexión al servidor"+ex.getMessage());
             }
          // Return of the message to the controller
          LOGGER.info("Returning the message");
