@@ -123,7 +123,7 @@ public class Client implements Connectable{
                     throw new ServerConnectionErrorException();
             }
         } catch (Exception e) {
-            LOGGER.warning("Error de conexión al servidor"+e.getMessage());
+            LOGGER.warning("Server connection error"+e.getMessage());
         }
          try {
             if(objectOutputStream!=null){
@@ -133,7 +133,7 @@ public class Client implements Connectable{
                 objectInputStream.close();
             }
             } catch (IOException ex) {
-                Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
+                LOGGER.warning("Error closing streams"+ex.getMessage());
             }
          // Return of the message to the controller
          LOGGER.info("Returning the message");
