@@ -6,7 +6,6 @@
 package clientlogic.logic;
 import utilities.exception.LoginNotFoundException;
 import utilities.exception.WrongPasswordException;
-import utilities.exception.LogicException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -16,38 +15,42 @@ import java.util.logging.Logger;
 import utilities.beans.User;
 import utilities.beans.Message;
 import utilities.exception.LoginAlreadyTakenException;
+import utilities.exception.ServerConnectionErrorException;
 import utilities.interfaces.Connectable;
 /**
  * @author Gaizka Andrés
  */
 public class Client implements Connectable{
     private static final Logger LOGGER=Logger.getLogger("clientlogic.logic.Client");
-    private final int PORT=0;
-    private final String IP="0";
+    private final int PORT=5000;
+    private final String IP="localhost";
     Message message;
     Socket socket;
-    ObjectOutputStream send;
-    ObjectInputStream receive;
+    ObjectOutputStream objectOutputStream;
+    ObjectInputStream objectInputStream;
     
     public Client() {
         
         try {
             socket = new Socket(IP,PORT);
-            send= new ObjectOutputStream(socket.getOutputStream());
-            receive= new ObjectInputStream(socket.getInputStream());
-        } catch (IOException ex) {
-            Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
+            objectOutputStream= new ObjectOutputStream(socket.getOutputStream());
+            objectInputStream= new ObjectInputStream(socket.getInputStream());
+        } catch (Exception ex) {
+            LOGGER.warning("Error con los stream");
         }
         
-
     }
 
     /**
      * Send a Login petition to the server
-     * @param Gaizka Andrés
+     * @param user
+     * @author Gaizka Andrés
+     * @return 
+     * @throws utilities.exception.LoginNotFoundException
+     * @throws utilities.exception.WrongPasswordException
      */
     @Override
-     public User logIn(User user) throws LoginNotFoundException,WrongPasswordException,LogicException{
+     public User logIn(User user) throws LoginNotFoundException, WrongPasswordException, ServerConnectionErrorException{
         LOGGER.info("Login petition initialize");
         try {
      
@@ -56,36 +59,33 @@ public class Client implements Connectable{
             message.setUser(user);
             message.setType("Login");
             //Send the message through the socket to the server
-            send.writeObject(message);
+            objectOutputStream.writeObject(message);
             LOGGER.info("Sending message...");
             //Receive the response of the server through the socket
-            message = (Message) receive.readObject();
+            message = (Message) objectInputStream.readObject();
             LOGGER.info("Reading message...");
             //Control of error of Login
             switch(message.getType()){
-                case "PasswordError":
-                    throw new WrongPasswordException();
-                    
                 case "LoginError":
-                    throw new LoginNotFoundException();         
-                default:
-                    throw new LogicException();
+                    throw new LoginNotFoundException(); 
+                case "PasswordError":
+                    throw new WrongPasswordException();         
+                case "ServerError": 
+                    throw new ServerConnectionErrorException();
             }
-        } catch (IOException ex) {
-            Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (Exception e) {
+            LOGGER.warning("Error de conexión al servidor"+e.getMessage());
         }
         //Closing the socket
         try {
-            if(send!=null){
-                send.close();
+            if(objectOutputStream!=null){
+                objectOutputStream.close();
             }
-            if(receive!=null){
-                receive.close();
+            if(objectInputStream!=null){
+                objectInputStream.close();
             }
-            } catch (IOException ex) {
-                Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (Exception ex) {
+                LOGGER.warning("Error de conexión al servidor"+ex.getMessage());
             }
          // Return of the message to the controller
          LOGGER.info("Returning the message");
@@ -95,10 +95,13 @@ public class Client implements Connectable{
     
     /**
      * Send a SignUp petition to the server
-     * @param Gaizka Andrés
+     * @param user
+     * @author Gaizka Andrés
+     * @return 
+     * @throws utilities.exception.LoginAlreadyTakenException
      */
     @Override
-    public User signUp(User user) throws LoginAlreadyTakenException,LogicException{
+    public User signUp(User user) throws LoginAlreadyTakenException, ServerConnectionErrorException {
         LOGGER.info("SignUp petition initialize");
         try {
             //Create a new message with the user who had received 
@@ -106,30 +109,28 @@ public class Client implements Connectable{
             message.setUser(user);
             message.setType("SignUp");
             //Send the message through the socket to the server
-            send.writeObject(message);
+            objectOutputStream.writeObject(message);
             LOGGER.info("Sending message...");
             
             //Receive the response of the server through the socket
-            message= (Message) receive.readObject();
+            message= (Message) objectInputStream.readObject();
             LOGGER.info("Reading message...");
             //Control of error of Sign Up
             switch(message.getType()){
-                case "AlreadyTaken":
+                case "LoginTaken":
                     throw new LoginAlreadyTakenException();
-                default: 
-                    throw new LogicException();
+                case "ServerError": 
+                    throw new ServerConnectionErrorException();
             }
-        } catch (IOException ex) {
-            Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (Exception e) {
+            LOGGER.warning("Error de conexión al servidor"+e.getMessage());
         }
          try {
-            if(send!=null){
-                send.close();
+            if(objectOutputStream!=null){
+                objectOutputStream.close();
             }
-            if(receive!=null){
-                receive.close();
+            if(objectInputStream!=null){
+                objectInputStream.close();
             }
             } catch (IOException ex) {
                 Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
@@ -143,7 +144,7 @@ public class Client implements Connectable{
      * @param user 
      */
     @Override
-    public void logOut(User user) throws LogicException               {
+    public void logOut(User user) throws ServerConnectionErrorException{
         LOGGER.info("LogOut petition initialize");
         try {
             //Create a new message with the user who had received 
@@ -151,38 +152,30 @@ public class Client implements Connectable{
             message.setUser(user);
             message.setType("LogOut");
             //Send the message through the socket to the server
-            send.writeObject(message);
+            objectOutputStream.writeObject(message);
             LOGGER.info("Reading message...");
             
             //Receive the response of the server through the socket
-            message = (Message) receive.readObject();
+            message = (Message) objectInputStream.readObject();
             LOGGER.info("Reading message...");
             //Control of error of Sign Up
-            if(message.getType().equalsIgnoreCase("Error")){
-                throw new LogicException();            
+            if(message.getType().equalsIgnoreCase("ServerError")){
+                throw new ServerConnectionErrorException();            
             }
-           
-        } catch (IOException ex) {
-            Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (Exception e) {
+            LOGGER.warning("Error de conexión al servidor"+e.getMessage());
         }
           try {
-            if(send!=null){
-                send.close();
+            if(objectOutputStream!=null){
+                objectOutputStream.close();
             }
-            if(receive!=null){
-                receive.close();
+            if(objectInputStream!=null){
+                objectInputStream.close();
             }
-            } catch (IOException ex) {
-                Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (Exception e) {
+                LOGGER.warning("Error de conexión al servidor"+e.getMessage());
             }
         }
-
-    @Override
-    public String getMessage() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
         
     }
 
