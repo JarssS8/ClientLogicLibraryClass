@@ -10,13 +10,13 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import utilities.beans.User;
 import utilities.beans.Message;
 import utilities.exception.LoginAlreadyTakenException;
 import utilities.exception.ServerConnectionErrorException;
 import utilities.interfaces.Connectable;
+
 /**
  * @author Gaizka Andrés
  */
@@ -44,7 +44,6 @@ public class Client implements Connectable{
     /**
      * Send a Login petition to the server
      * @param user
-     * @author Gaizka Andrés
      * @return 
      * @throws utilities.exception.LoginNotFoundException
      * @throws utilities.exception.WrongPasswordException
@@ -96,7 +95,6 @@ public class Client implements Connectable{
     /**
      * Send a SignUp petition to the server
      * @param user
-     * @author Gaizka Andrés
      * @return 
      * @throws utilities.exception.LoginAlreadyTakenException
      */
