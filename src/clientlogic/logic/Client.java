@@ -12,6 +12,8 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.SocketException;
+import java.util.ResourceBundle;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import utilities.beans.User;
 import utilities.beans.Message;
@@ -25,11 +27,11 @@ import utilities.interfaces.Connectable;
  *
  * @author Gaizka Andrés
  */
-public class Client implements Connectable {
 
-    private static final Logger LOGGER = Logger.getLogger("clientlogic.logic.Client");
-    private final int PORT = 5000;
-    private final String IP = "localhost";
+public class Client implements Connectable{
+    private static final Logger LOGGER=Logger.getLogger("clientlogic.logic.Client");
+    private final int PORT=Integer.parseInt(ResourceBundle.getBundle("client.logic.ConnectionProperties").getString("PORT"));
+    private final String IP=ResourceBundle.getBundle("client.logic.ConnectionProperties").getString("IP");
     Message message;
     Socket socket;
     ObjectOutputStream objectOutputStream;
