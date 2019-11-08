@@ -13,6 +13,10 @@ import utilities.interfaces.Connectable;
  * 
  */
 public class ConnectableClientFactory {
+    public static Connectable getClient(String IP, int PORT){
+        return new Client(IP,PORT);
+    }
+    
     public static Connectable getClient(){
         return new Client();
     }
