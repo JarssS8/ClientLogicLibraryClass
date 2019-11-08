@@ -20,6 +20,9 @@ import utilities.exception.ServerConnectionErrorException;
 import utilities.interfaces.Connectable;
 
 /**
+ * This class implements Connectable interface. Creates a socket and connects
+ * with server side.
+ *
  * @author Gaizka Andrés
  */
 public class Client implements Connectable {
@@ -32,46 +35,59 @@ public class Client implements Connectable {
     ObjectOutputStream objectOutputStream;
     ObjectInputStream objectInputStream;
 
+    /**
+     * An empty constructor for the client.
+     */
     public Client() {
 
         try {
             socket = new Socket(IP, PORT);
+            LOGGER.info("Socket created");
             socket.setSoTimeout(6000);
             objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
             objectInputStream = new ObjectInputStream(socket.getInputStream());
         } catch (IOException ex) {
-            LOGGER.warning("Server is off");
-        }
-
-    }
-    
-    public Client(String IP, int PORT) {
-
-        try {
-            socket = new Socket(IP, PORT);
-            socket.setSoTimeout(6000);
-            objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
-            objectInputStream = new ObjectInputStream(socket.getInputStream());
-        } catch (IOException ex) {
-            LOGGER.warning("Server is off");
+            LOGGER.warning("Server is OFF");
         }
 
     }
 
     /**
-     * Send a Login petition to the server
+     * A constructor with two parameters for the client.
      *
-     * @param user
-     * @return
-     * @throws utilities.exception.LoginNotFoundException
-     * @throws utilities.exception.WrongPasswordException
-     * @throws utilities.exception.ServerConnectionErrorException
+     * @param IP a String that contains the IP
+     * @param PORT an int that contains the Port
+     */
+    public Client(String IP, int PORT) {
+
+        try {
+            socket = new Socket(IP, PORT);
+            LOGGER.info("Socket created");
+            socket.setSoTimeout(6000);
+            objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
+            objectInputStream = new ObjectInputStream(socket.getInputStream());
+        } catch (IOException ex) {
+            LOGGER.warning("Server is OFF");
+        }
+
+    }
+
+    /**
+     * This class sends a Login petition to the server.
+     *
+     * @param user a User object that contains the data saved from the login
+     * window.
+     * @return a user with the data recovered from the database.
+     * @throws LoginNotFoundException If login does not exist in the database.
+     * @throws WrongPasswordException If password does not match with the user.
+     * @throws ServerConnectionErrorException If there's an error in the server.
      */
     @Override
-    public User logIn(User user) throws LoginNotFoundException, WrongPasswordException, ServerConnectionErrorException {
+    public User logIn(User user) throws LoginNotFoundException,
+            WrongPasswordException, ServerConnectionErrorException {
         try {
             if (socket != null) {
-                LOGGER.info("Login petition initialize");
+                LOGGER.info("Beginning login request...");
                 //Create a new message with the user who had received 
                 message = new Message();
                 message.setUser(user);
@@ -95,9 +111,10 @@ public class Client implements Connectable {
                 throw new ServerConnectionErrorException();
             }
         } catch (SocketException e) {
+            LOGGER.warning("Client: Socket connection error" + e.getMessage());
             throw new ServerConnectionErrorException();
         } catch (IOException | ClassNotFoundException e) {
-            LOGGER.warning("Error de conexión al servidor" + e.getMessage());
+            LOGGER.warning("Client: Server connection error" + e.getMessage());
             throw new ServerConnectionErrorException();
         }
         //Closing the socket
@@ -109,7 +126,7 @@ public class Client implements Connectable {
                 objectInputStream.close();
             }
         } catch (IOException ex) {
-            LOGGER.warning("Error de conexión al servidor" + ex.getMessage());
+            LOGGER.warning("Client: Server connection error" + ex.getMessage());
         }
         // Return of the message to the controller
         LOGGER.info("Returning the message");
@@ -118,18 +135,19 @@ public class Client implements Connectable {
     }
 
     /**
-     * Send a SignUp petition to the server
+     * This class sends a Sign up petition to the server.
      *
-     * @param user
-     * @return
-     * @throws utilities.exception.LoginAlreadyTakenException
-     * @throws utilities.exception.ServerConnectionErrorException
+     * @param user a User object that contains the data saved from the sign up.
+     * @return a user with the data recovered from the database.
+     * @throws LoginAlreadyTakenException If the login already exists in the
+     * database.
+     * @throws ServerConnectionErrorException If there's an error in the server.
      */
     @Override
     public User signUp(User user) throws LoginAlreadyTakenException, ServerConnectionErrorException {
         try {
             if (socket != null) {
-                LOGGER.info("SignUp petition initialize");
+                LOGGER.info("Beginning SignUp request...");
                 //Create a new message with the user who had received 
                 message = new Message();
                 message.setUser(user);
@@ -152,33 +170,34 @@ public class Client implements Connectable {
                 throw new ServerConnectionErrorException();
             }
         } catch (IOException | ClassNotFoundException e) {
-            LOGGER.warning("Server connection error: " + e.getMessage());
+            LOGGER.warning("Client: Server connection error: " + e.getMessage());
             throw new ServerConnectionErrorException();
-        }
-        try {
-            if (objectOutputStream != null) {
-                objectOutputStream.close();
+        } finally {
+            try {
+                if (objectOutputStream != null) {
+                    objectOutputStream.close();
+                }
+                if (objectInputStream != null) {
+                    objectInputStream.close();
+                }
+            } catch (IOException ex) {
+                LOGGER.warning("Client: Error closing streams" + ex.getMessage());
             }
-            if (objectInputStream != null) {
-                objectInputStream.close();
-            }
-        } catch (IOException ex) {
-            LOGGER.warning("Error closing streams" + ex.getMessage());
         }
+
         // Return of the message to the controller
         LOGGER.info("Returning the message");
         return message.getUser();
     }
 
     /**
-     * Send a LogOut petition to the server
-     *
-     * @param user
-     * @throws utilities.exception.ServerConnectionErrorException
+     * This class sends a Log out petition to the server.
+     * @param user a User object that contains the data saved from the sign up. 
+     * @throws ServerConnectionErrorException If there's an error in the server.
      */
     @Override
     public void logOut(User user) throws ServerConnectionErrorException {
-        LOGGER.info("LogOut petition initialize");
+        LOGGER.info("Beginning logout request...");
         try {
             //Create a new message with the user who had received 
             message = new Message();
