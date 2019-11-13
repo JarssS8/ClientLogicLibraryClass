@@ -30,8 +30,8 @@ import utilities.interfaces.Connectable;
 
 public class Client implements Connectable{
     private static final Logger LOGGER=Logger.getLogger("clientlogic.logic.Client");
-    private final int PORT=Integer.parseInt(ResourceBundle.getBundle("client.logic.ConnectionProperties").getString("PORT"));
-    private final String IP=ResourceBundle.getBundle("client.logic.ConnectionProperties").getString("IP");
+    private final int PORT=5000;
+    private final String IP="localhost";
     Message message;
     Socket socket;
     ObjectOutputStream objectOutputStream;
