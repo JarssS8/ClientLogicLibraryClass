@@ -12,8 +12,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.SocketException;
-import java.util.ResourceBundle;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import utilities.beans.User;
 import utilities.beans.Message;
@@ -27,30 +25,20 @@ import utilities.interfaces.Connectable;
  *
  * @author Gaizka Andrés
  */
+public class Client implements Connectable {
 
-public class Client implements Connectable{
-    private static final Logger LOGGER=Logger.getLogger("clientlogic.logic.Client");
-    private final int PORT=Integer.parseInt(ResourceBundle.getBundle("client.logic.ConnectionProperties").getString("PORT"));
-    private final String IP=ResourceBundle.getBundle("client.logic.ConnectionProperties").getString("IP");
+    private static final Logger LOGGER = Logger.getLogger("clientlogic.logic.Client");
+    private int PORT = 5000;
+    private String IP = "localhost";
     Message message;
     Socket socket;
-    ObjectOutputStream objectOutputStream;
-    ObjectInputStream objectInputStream;
+    ObjectOutputStream objectOutputStream = null;
+    ObjectInputStream objectInputStream = null;
 
     /**
      * An empty constructor for the client.
      */
     public Client() {
-
-        try {
-            socket = new Socket(IP, PORT);
-            LOGGER.info("Socket created");
-            socket.setSoTimeout(6000);
-            objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
-            objectInputStream = new ObjectInputStream(socket.getInputStream());
-        } catch (IOException ex) {
-            LOGGER.warning("Server is OFF");
-        }
 
     }
 
@@ -61,16 +49,6 @@ public class Client implements Connectable{
      * @param PORT an int that contains the Port
      */
     public Client(String IP, int PORT) {
-
-        try {
-            socket = new Socket(IP, PORT);
-            LOGGER.info("Socket created");
-            socket.setSoTimeout(6000);
-            objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
-            objectInputStream = new ObjectInputStream(socket.getInputStream());
-        } catch (IOException ex) {
-            LOGGER.warning("Server is OFF");
-        }
 
     }
 
@@ -88,6 +66,10 @@ public class Client implements Connectable{
     public User logIn(User user) throws LoginNotFoundException,
             WrongPasswordException, ServerConnectionErrorException {
         try {
+            socket = new Socket(IP, PORT);
+            socket.setSoTimeout(6000);
+            objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
+            objectInputStream = new ObjectInputStream(socket.getInputStream());
             if (socket != null) {
                 LOGGER.info("Beginning login request...");
                 //Create a new message with the user who had received 
@@ -118,18 +100,20 @@ public class Client implements Connectable{
         } catch (IOException | ClassNotFoundException e) {
             LOGGER.warning("Client: Server connection error" + e.getMessage());
             throw new ServerConnectionErrorException();
-        }
-        //Closing the socket
-        try {
-            if (objectOutputStream != null) {
-                objectOutputStream.close();
+        } finally {
+
+            try {
+                if (objectOutputStream != null) {
+                    objectOutputStream.close();
+                }
+                if (objectInputStream != null) {
+                    objectInputStream.close();
+                }
+            } catch (IOException ex) {
+                LOGGER.warning("Client: Server connection error" + ex.getMessage());
             }
-            if (objectInputStream != null) {
-                objectInputStream.close();
-            }
-        } catch (IOException ex) {
-            LOGGER.warning("Client: Server connection error" + ex.getMessage());
         }
+
         // Return of the message to the controller
         LOGGER.info("Returning the message");
         return message.getUser();
@@ -148,7 +132,11 @@ public class Client implements Connectable{
     @Override
     public User signUp(User user) throws LoginAlreadyTakenException, ServerConnectionErrorException {
         try {
+            socket = new Socket(IP, PORT);
+            socket.setSoTimeout(6000);
             if (socket != null) {
+                objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
+                objectInputStream = new ObjectInputStream(socket.getInputStream());
                 LOGGER.info("Beginning SignUp request...");
                 //Create a new message with the user who had received 
                 message = new Message();
@@ -194,13 +182,18 @@ public class Client implements Connectable{
 
     /**
      * This class sends a Log out petition to the server.
-     * @param user a User object that contains the data saved from the sign up. 
+     *
+     * @param user a User object that contains the data saved from the sign up.
      * @throws ServerConnectionErrorException If there's an error in the server.
      */
     @Override
     public void logOut(User user) throws ServerConnectionErrorException {
         LOGGER.info("Beginning logout request...");
         try {
+            socket = new Socket(IP, PORT);
+            socket.setSoTimeout(6000);
+            objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
+            objectInputStream = new ObjectInputStream(socket.getInputStream());
             //Create a new message with the user who had received 
             message = new Message();
             message.setUser(user);
