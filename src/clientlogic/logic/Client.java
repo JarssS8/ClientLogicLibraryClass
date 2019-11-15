@@ -47,7 +47,8 @@ public class Client implements Connectable{
     @Override
     public User logIn(User user) throws LoginNotFoundException,
             WrongPasswordException, ServerConnectionErrorException {
-        try {
+        try { 
+            /*MODIFICACIÓN DIN 13/11/2019*/
             socket = new Socket(IP, PORT);
             LOGGER.info("Socket created");
             socket.setSoTimeout(6000);
@@ -113,6 +114,7 @@ public class Client implements Connectable{
     @Override
     public User signUp(User user) throws LoginAlreadyTakenException, ServerConnectionErrorException {
         try {
+            /*MODIFICACIÓN DIN 13/11/2019*/
             socket = new Socket(IP, PORT);
             LOGGER.info("Socket created");
             socket.setSoTimeout(6000);
@@ -171,6 +173,7 @@ public class Client implements Connectable{
     public void logOut(User user) throws ServerConnectionErrorException {
         LOGGER.info("Beginning logout request...");
         try {
+            /*MODIFICACIÓN DIN 13/11/2019*/
             socket = new Socket(IP, PORT);
             LOGGER.info("Socket created");
             socket.setSoTimeout(6000);
